@@ -28,7 +28,7 @@ public class Game extends AnimationTimer{
     double camD = 0.84; //camera depth
     int speed = 0;
     double playerX = 0;
-    
+    ArrayList<Line> lines = new ArrayList<>();
     Pane pane;
     
     Game(Pane pane){
@@ -66,8 +66,8 @@ public class Game extends AnimationTimer{
     @Override
     public void handle(long now) {
         
+        lines.clear();
         
-        ArrayList<Line> lines = new ArrayList<>();
         
         for(int i = 0; i < 1600; i++){
             Line line = new Line();
