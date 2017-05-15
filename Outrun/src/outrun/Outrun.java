@@ -36,7 +36,6 @@ public class Outrun extends Application {
         
         root.setFocusTraversable(true);
         
-        
         Scene scene = new Scene(root, 1024, 768);
         
         primaryStage.setTitle("Outrun!");

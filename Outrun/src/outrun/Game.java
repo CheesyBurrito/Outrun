@@ -44,10 +44,12 @@ public class Game extends AnimationTimer{
         //Polyline shape = new Polyline();
         Polygon shape = new Polygon();
         
+        //shape.setStrokeWidth(0);
+        
         shape.setStroke(c);
         
         shape.setFill(c);
-        shape.setOpacity(2);
+        
         
         Double[] array = {
             x11.getX(), x11.getY(),
@@ -86,7 +88,6 @@ public class Game extends AnimationTimer{
         
         
         pane.setOnKeyPressed(e ->{
-            //System.out.println("KeyPressed");
             if(e.getCode() == RIGHT){
                 playerX += 0.1;
             }
@@ -106,7 +107,6 @@ public class Game extends AnimationTimer{
         
         
         pos += speed;
-        //System.out.println(pos);
         while (pos >= N*segL) pos-=N*segL;
         while (pos < 0) pos += N*segL;
         
