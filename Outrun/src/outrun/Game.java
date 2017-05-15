@@ -5,12 +5,15 @@
  */
 package outrun;
 
+import java.util.ArrayList;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
+import static javafx.scene.input.KeyCode.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
+import javafx.scene.shape.Rectangle;
 
 /**
  *
@@ -20,6 +23,11 @@ public class Game extends AnimationTimer{
     
     int width = 1024;
     int height = 768;
+    int roadW = 2000;
+    int segL = 200; //segment length
+    double camD = 0.84; //camera depth
+    int speed = 0;
+    double playerX = 0;
     
     Pane pane;
     
@@ -27,62 +35,118 @@ public class Game extends AnimationTimer{
         this.pane = pane;
     }
     
-    public void drawQuad(Pane w, Color c, int x1,int y1,int w1,int x2,int y2,int w2){
-    Polygon shape = new Polygon(4);
-    
-    shape.setFill(c);
-    //shape.localToScreen(Point2D.ZERO)
-    shape.localToScreen(new Point2D(x1-w1,y1));
-    shape.localToScreen(new Point2D(x2-w2,y2));
-    shape.localToScreen(new Point2D(x2+w2,y2));
-    shape.localToScreen(new Point2D(x1+w1,y1));
-    w.getChildren().add(shape);
+    public void drawQuad(Pane w, Color c, double x1, double y1, double w1, double x2, double y2, double w2){
+        Point2D x11 = new Point2D(x1 - w1, y1);
+        Point2D y22 = new Point2D(x2 - w2, y2);
+        Point2D x22 = new Point2D(x2 + w2, y2);
+        Point2D y11 = new Point2D(x1 + w1, y1);
+        
+        //Polyline shape = new Polyline();
+        Polygon shape = new Polygon();
+        
+        shape.setStroke(c);
+        
+        shape.setFill(c);
+        shape.setOpacity(2);
+        
+        Double[] array = {
+            x11.getX(), x11.getY(),
+            y22.getX(), y22.getY(),   
+            x22.getX(), x22.getY(),
+            y11.getX(), y11.getY()
+        };
+        shape.getPoints().addAll(array);
+        
+        w.getChildren().add(shape);
 }
     
-    struct Line
-{
-  float x,y,z; //3d center of line
-  float X,Y,W; //screen coord
-  float curve,spriteX,clip,scale;
-  Sprite sprite;
-
-  Line()
-  {spriteX=curve=x=y=z=0;}
-
-  void project(int camX,int camY,int camZ)
-  {
-    scale = camD/(z-camZ);
-    X = (1 + scale*(x - camX)) * width/2;
-    Y = (1 - scale*(y - camY)) * height/2;
-    W = scale * roadW  * width/2;
-  }
     
     @Override
     public void handle(long now) {
+        
+        
+        ArrayList<Line> lines = new ArrayList<>();
+        
+        for(int i = 0; i < 1600; i++){
+            Line line = new Line();
+            line.z = i * segL;
+            if (i > 300 && i < 700) line.curve = 0.5;
+            if (i > 1100) line.curve =- 0.7;
+            if (i > 750 ) line.y = Math.sin(i / 30.0) * 1500;
+            
+            lines.add(line);
+        }
+        
+        int N = lines.size();
+        
+        int pos = 0;
+        
+        int H = 1500;
+        
+        
+        
+        pane.setOnKeyPressed(e ->{
+            //System.out.println("KeyPressed");
+            if(e.getCode() == RIGHT){
+                playerX += 0.1;
+            }
+            
+            if(e.getCode() == LEFT){
+                playerX -= 0.1;
+            }
+            
+            if(e.getCode() == UP){
+                speed += 200;
+            }
+            
+            if(e.getCode() == DOWN){
+                speed += -200;
+            }
+        });
+        
+        
+        pos += speed;
+        //System.out.println(pos);
+        while (pos >= N*segL) pos-=N*segL;
+        while (pos < 0) pos += N*segL;
+        
+        pane.getChildren().clear();
+        //pane.getChildren().add(new Rectangle(1024, 768, Color.rgb(105, 205, 4)));
+        
+        int startPos = pos / segL;
+        double camH = (lines.get(startPos).y + H);
+        
+        
+        
         int maxy = height;
-        float x=0,dx=0;
-        int startPos = 0;
-  ///////draw road////////
-  for(int n = startPos; n < startPos + 300; n++){
+        double x = 0, dx = 0;
+        
+        
+        
+        
+          for(int n = startPos; n < startPos + 300; n++){
       
-    Line &l = lines[n%N];
-    l.project(0, 15, 0);
-    x+=dx;
-    dx+=l.curve;
+            Line l = lines.get(n % N);
+            l.project(playerX * roadW - x, camH, startPos * segL - (n >= N ? N * segL : 0));
+            x += dx;
+            dx += l.curve;
 
-    l.clip=maxy;
-    if (l.Y>=maxy) continue;
-    maxy = l.Y;
-
-    Color grass  = (n/3)%2?Color(16,200,16):Color(0,154,0);
-    Color rumble = (n/3)%2?Color(255,255,255):Color(0,0,0);
-    Color road   = (n/3)%2?Color(107,107,107):Color(105,105,105);
-
-    Line p = lines[(n-1)%N]; //previous line
-
-    drawQuad(app, grass, 0, p.Y, width, 0, l.Y, width);
-    drawQuad(app, rumble,p.X, p.Y, p.W*1.2, l.X, l.Y, l.W*1.2);
-    drawQuad(app, road,  p.X, p.Y, p.W, l.X, l.Y, l.W);
+            //l.clip = maxy;
+            
+           if (l.Y>=maxy) continue;
+            maxy = (int) l.Y;
+            
+            
+            Color grass  = (n / 3) % 2 == 0 ? Color.rgb(16, 200, 16) : Color.rgb(0, 154, 0);
+            Color rumble = (n / 3) % 2 == 0 ? Color.rgb(255, 255, 255) : Color.rgb(0, 0, 0);
+            Color road   = (n / 3) % 2 == 0 ? Color.rgb(107, 107, 107) : Color.rgb(105, 105, 105);
+    
+            Line p = lines.get((n - 1) % N);
+            
+            
+            drawQuad(pane, grass, 0, p.Y, width, 0, l.Y, width);
+            drawQuad(pane, rumble, p.X, p.Y, p.W * 1.2, l.X, l.Y, l.W * 1.2);
+            drawQuad(pane, road,  p.X, p.Y, p.W, l.X, l.Y, l.W);
    }
     }
     

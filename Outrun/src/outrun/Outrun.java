@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
@@ -23,19 +24,27 @@ import javafx.stage.Stage;
  */
 public class Outrun extends Application {
     
-    
-    
     @Override
     public void start(Stage primaryStage) {
         
         
         Pane root = new Pane();
         
-        Scene scene = new Scene(root, 300, 250);
+        Game game = new Game(root);
+        
+        game.start();
+        
+        root.setFocusTraversable(true);
+        
+        
+        Scene scene = new Scene(root, 1024, 768);
         
         primaryStage.setTitle("Outrun!");
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        root.requestFocus();
+        //primaryStage.requestFocus();
     }
 
     /**
