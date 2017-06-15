@@ -6,16 +6,11 @@
 package outrun;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
 /**
@@ -27,23 +22,20 @@ public class Outrun extends Application {
     @Override
     public void start(Stage primaryStage) {
         
+        Group root = new Group();
+        Scene scene = new Scene(root, 1024, 768);
+        Canvas canvas = new Canvas(1024, 768);
         
-        Pane root = new Pane();
-        
-        Game game = new Game(root);
+        Game game = new Game(canvas);
         
         game.start();
         
-        root.setFocusTraversable(true);
-        
-        Scene scene = new Scene(root, 1024, 768);
+        canvas.setFocusTraversable(true);
+        root.getChildren().add(canvas);
         
         primaryStage.setTitle("Outrun!");
         primaryStage.setScene(scene);
         primaryStage.show();
-        
-        root.requestFocus();
-        //primaryStage.requestFocus();
     }
 
     /**
